@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relationship Chatbot</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f1f1f1; margin: 0; padding: 0; }
+        .chat-container { max-width: 600px; margin: 20px auto; padding: 20px; background-color: white; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); }
+        .message { padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+        .user-message { background-color: #e1f5fe; }
+        .bot-message { background-color: #f1f8e9; }
+        #chatbox { max-height: 400px; overflow-y: scroll; margin-bottom: 20px; }
+        input[type="text"] { padding: 10px; width: calc(100% - 100px); }
+        button { padding: 10px; width: 80px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div id="chatbox">
+        <div class="message bot-message">Hello! How can I assist you today with relationship advice?</div>
+    </div>
+    <input type="text" id="user-input" placeholder="Type your message here..." onkeydown="handleKeyDown(event)" />
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+    // Function to handle sending message when Enter key is pressed
+    function handleKeyDown(event) {
+        if (event.key === "Enter") {
+            sendMessage(); // Trigger the send message function
+        }
+    }
+
+    function sendMessage() {
+        const userInput = document.getElementById("user-input").value;
+        const chatbox = document.getElementById("chatbox");
+
+        if (userInput) {
+            // Display user message
+            const userMessage = document.createElement("div");
+            userMessage.classList.add("message", "user-message");
+            userMessage.textContent = "You: " + userInput;
+            chatbox.appendChild(userMessage);
+
+            // Send message to backend and get response
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'message=' + encodeURIComponent(userInput)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const botMessage = document.createElement("div");
+                botMessage.classList.add("message", "bot-message");
+
+                // Show the full bot response (no truncation)
+                botMessage.textContent = "Bot: " + data.response;
+                chatbox.appendChild(botMessage);
+
+                // Clear the input field after sending
+                document.getElementById("user-input").value = "";
+                chatbox.scrollTop = chatbox.scrollHeight;  // Auto-scroll to the bottom
+            });
+        }
+    }
+</script>
+
+</body>
+</html>
